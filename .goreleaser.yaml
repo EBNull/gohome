@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser
+      - -X github.com/ebnull/gohome/build.DefaultAuto=true
+      - -X github.com/ebnull/gohome/build.DefaultBind=127.0.0.53:80
+      - -X github.com/ebnull/gohome/build.DefaultCache=~/.cache/golink_cache.json
+      - -X github.com/ebnull/gohome/build.DefaultChain=
+      - -X github.com/ebnull/gohome/build.DefaultHostsfile=/etc/hosts
+      - -X github.com/ebnull/gohome/build.DefaultHostname=gohome
+      - -X github.com/ebnull/gohome/build.DefaultInterval=15m
+      - -X github.com/ebnull/gohome/build.DefaultLoopbackInterface=lo1
+      - -X github.com/ebnull/gohome/build.DefaultRemote=
+      - -X github.com/ebnull/gohome/build.DefaulAddLinkUrl=
+
+dockers:
+  - image_templates:
+      - ghcr.io/ebnull/gohome:latest
+
+brews:
+  - repository:
+      owner: ebnull
+      name: homebrew-gohome
+    service: |
+      run [opt_bin/"gohome"]
+      require_root true
+      working_dir HOMEBREW_PREFIX
+    url_headers:
+      - "Accept: application/octet-stream"
+      - "Authorization: bearer #{GitHub::API.credentials}"
+
+#release:
+#  draft: true
+
+announce:
+  skip: true
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
