@@ -29,6 +29,9 @@ builds:
 dockers:
   - image_templates:
       - ghcr.io/ebnull/gohome:latest
+      - ghcr.io/ebnull/gohome:{{ .Tag }}
+      - ghcr.io/ebnull/gohome:v{{ .Major }}
+      - ghcr.io/ebnull/gohome:v{{ .Major }}.{{ .Minor }}
 
 brews:
   - repository:
