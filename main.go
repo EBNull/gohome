@@ -27,7 +27,8 @@ var (
 )
 
 var (
-	flagCache = flag.String("cache", build.DefaultCache, "The filename to load cached golinks from")
+	flagVersion = flag.Bool("version", false, "Show version and exit")
+	flagCache   = flag.String("cache", build.DefaultCache, "The filename to load cached golinks from")
 
 	flagChain          = flag.String("chain", build.DefaultChain, "The remote URL to chain redirect to (if link not found in local cache)")
 	flagRemote         = flag.String("remote", build.DefaultRemote, "The remote URL to update golinks from")
@@ -94,6 +95,11 @@ func mainImpl() error {
 	flag.Parse()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	if *flagVersion {
+		fmt.Printf("%s\n%s\n%s\n%s", "gohome", version, commit, date)
+		return nil
+	}
 
 	db := &LinkDB{}
 	if err := db.LoadJson(*flagCache); err != nil {

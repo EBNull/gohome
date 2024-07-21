@@ -40,6 +40,8 @@ brews:
     repository:
       owner: ebnull
       name: homebrew-gohome
+    test: |
+      system "#{bin}/gohome --version"
     service: |
       run [opt_bin/"gohome"]
       require_root true
