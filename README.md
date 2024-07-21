@@ -175,4 +175,4 @@ goreleaser build --snapshot --clean
 
 ## License
 
-The standard [MIT License](LICENSE.txt). It would still be nice to give acknowledgements and a link to this repository, but you are not required to do so.
+The standard [MIT License](LICENSE.txt).
