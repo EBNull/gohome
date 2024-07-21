@@ -110,7 +110,8 @@ func (g *goHttp) linkFound(link *Link) error {
 	}
 	return htmlTemplate(g.W,
 		http.StatusOK,
-		`<h1>go/{{.Display}}</h1><a href="/{{.Display}}">go/{{.Display}}</a> redirects to <a href="{{.Destination}}">{{.Destination}}</a>`,
+		`<h1>go/{{.Display}}</h1><a href="/{{.Display}}">go/{{.Display}}</a> redirects to <a href="{{.Destination}}">{{.Destination}}</a>.
+		 <p><a href="/_/pref?k=no-redirect&v=0">Don't show this next time</a>`,
 		link,
 	)
 }
@@ -133,7 +134,10 @@ func (g *goHttp) linkMissing(name string, chainUrl string) error {
 		if name == "links" {
 			return htmlTemplate(g.W,
 				http.StatusNotFound,
-				`<h1>Not Found</h1><pre style="display: inline">go/{{.Name}}</pre> does not redirect anywhere.<p>This UI does not support adding links.`,
+				`<h1>Not Found</h1>
+				 <pre style="display: inline">go/{{.Name}}</pre> does not redirect anywhere.
+				 <p>This UI does not support adding links.
+		     <p><a href="/">Home</a>`,
 				struct {
 					Name    string
 					ChainTo string
@@ -145,7 +149,10 @@ func (g *goHttp) linkMissing(name string, chainUrl string) error {
 
 	return htmlTemplate(g.W,
 		http.StatusNotFound,
-		`<h1>Not Found</h1><pre style="display: inline">go/{{.Name}}</pre> does not redirect anywhere.{{if .AddLinkUrl}}<p>Maybe you'd like to <a href="{{.AddLinkUrl}}">add it</a>?{{end}}{{if .ChainTo}} Or try <a href="{{.ChainTo}}">upstream</a>?{{end}}`,
+		`<h1>Not Found</h1><pre style="display: inline">go/{{.Name}}</pre> does not redirect anywhere.
+		 {{if .AddLinkUrl}}<p>Maybe you'd like to <a href="{{.AddLinkUrl}}">add it</a>?{{end}}
+		 {{if .ChainTo}}<p>Or try <a href="{{.ChainTo}}">upstream</a>?{{end}}
+		 <p><a href="/">Home</a>`,
 		struct {
 			Name       string
 			ChainTo    string
@@ -170,7 +177,9 @@ func (g *goHttp) handlePref() error {
 		g.setPref(k, v)
 		return htmlTemplate(g.W,
 			http.StatusOK,
-			`<meta http-equiv="refresh" content="1;URL='/'"><h1>Set Preference</h1>The pref <pre style="display: inline">{{.Name}}</pre> was set to <pre style="display: inline">{{.Value}}</pre>.<p><a href="/">Home</a>`,
+			`<noscript><meta http-equiv="refresh" content="1;URL='/'"></noscript><script language="JavaScript" type="text/javascript">setTimeout("window.history.go(-1)",1000);</script>
+			<h1>Set Preference</h1>The pref <pre style="display: inline">{{.Name}}</pre> was set to <pre style="display: inline">{{.Value}}</pre>.
+			<p><a href="/">Home</a>`,
 			struct {
 				Name  string
 				Value string
