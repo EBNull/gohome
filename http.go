@@ -17,6 +17,7 @@ var flagAddLinkUrl = flag.String("add-link-url", build.DefaultAddLinkUrl, "The u
 
 var tplHeader = `<!doctype html>`
 var tplFooter = `
+<title>gohome</title>
 		<style>
 			:root {
 				background-color: Field;
@@ -27,8 +28,26 @@ var tplFooter = `
 			}
 			a {
 			  color: VisitedText !important;
+				text-decoration: none;
       }
+			a:hover {
+        text-decoration: underline;
+			}
+			#ver {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				text-align: right;
+			}
+			#ver a {
+				margin-left: 4px;
+				margin-right: 4px;
+			}
+			#ver span {
+				font-size: small;
+			}
 		</style>
+			<div id="ver"><a href="https://github.com/EBNull/gohome">gohome</a>` + version + `<br><span>built ` + date + `</span></div>
 `
 
 func htmlTemplate(w http.ResponseWriter, status int, tpl string, data any) error {
@@ -78,17 +97,17 @@ func (g *goHttp) handleRoot() error {
 		<p>The local go link redirector</p>
 		{{if .AddLinkUrl}}<p><a href="{{.AddLinkUrl}}">Add a new link</a></p>{{end}}
 		<div id="prefs">
-		<table><tr><th>Pref</th><th>Value</th><th>Description</th><th></th></tr>
+		<table><tr><th>Pref</th><th>Value</th><th></th><th>Description</th></tr>
 		<tr>
 		  <th>no-redirect</th><td>{{.NoRedir}}</td>
+		  <td>{{if eq .NoRedir "0"}}<a href="/_/pref?k=no-redirect&v=1">Enable</a>{{else}}<a href="/_/pref?k=no-redirect&v=0">Disable</a>{{end}}</td>
 		  <td>If nonzero, render a html page to preview the link destination instead of automatically redirecting.</td>
-		  <td><a href="/_/pref?k=no-redirect&v=1">Enable</a> | <a href="/_/pref?k=no-redirect&v=0">Disable</a></td>
 		</tr>
 		{{if .CanChain}}
 		<tr>
 		  <th>no-chain</th><td>{{.NoChain}}</td>
+		  <td>{{if eq .NoChain "0"}}<a href="/_/pref?k=no-chain&v=1">Enable</a>{{else}}<a href="/_/pref?k=no-chain&v=0">Disable</a>{{end}}</td>
 		  <td>If nonzero and a golink is not found render a html page instead of automatically redirecting to upstream.</td>
-		  <td><a href="/_/pref?k=no-chain&v=1">Enable</a> | <a href="/_/pref?k=no-chain&v=0">Disable</a></td>
 		</tr>
 		{{end}}
 		</table>
@@ -140,8 +159,12 @@ func (g *goHttp) linkFound(link *Link) error {
 	}
 	return htmlTemplate(g.W,
 		http.StatusOK,
-		`<h1>go/{{.Display}}</h1><a href="/{{.Display}}">go/{{.Display}}</a> redirects to <a href="{{.Destination}}">{{.Destination}}</a>.
-		 <p><a href="/_/pref?k=no-redirect&v=0">Don't show this next time</a>`,
+		`<title>gohome - go/{{.Display}}</title>
+		 <h1>go/{{.Display}}</h1><a href="/{{.Display}}">go/{{.Display}}</a> redirects to <a href="{{.Destination}}">{{.Destination}}</a>.
+     <br><br><br>
+		 <p><a href="/_/pref?k=no-redirect&v=0&back=1">Don't show this next time</a>
+		 <br><br>
+		 <p><a href="/">Home</a>`,
 		link,
 	)
 }
@@ -207,7 +230,12 @@ func (g *goHttp) handlePref() error {
 		g.setPref(k, v)
 		return htmlTemplate(g.W,
 			http.StatusOK,
-			`<noscript><meta http-equiv="refresh" content="1;URL='/'"></noscript><script language="JavaScript" type="text/javascript">setTimeout("window.history.go(-1)",1000);</script>
+			`<noscript><meta http-equiv="refresh" content="1;URL='/'"></noscript>
+			<script>setTimeout(()=>{
+       if (window.location.href.includes("back")) { window.history.go(-1); return };
+        window.location = "/";
+			},1000);
+			</script>
 			<h1>Set Preference</h1>The pref <pre style="display: inline">{{.Name}}</pre> was set to <pre style="display: inline">{{.Value}}</pre>.
 			<p><a href="/">Home</a>`,
 			struct {

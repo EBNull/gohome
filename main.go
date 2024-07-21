@@ -21,6 +21,12 @@ import (
 )
 
 var (
+	version = ""
+	commit  = ""
+	date    = ""
+)
+
+var (
 	flagCache = flag.String("cache", build.DefaultCache, "The filename to load cached golinks from")
 
 	flagChain          = flag.String("chain", build.DefaultChain, "The remote URL to chain redirect to (if link not found in local cache)")
