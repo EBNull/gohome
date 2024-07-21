@@ -138,7 +138,7 @@ gohome --auto=false --bind :8080
 `golinks` supports storing options for each user in cookies.
 
 You can choose to enable `no-redirect`, which will show an
-intersital page to preview the link destination.
+interstitial page to preview the link destination.
 
 Alternately, you can enable `no-chain`, which will show an
 error page locally instead of redirecting to the configured
