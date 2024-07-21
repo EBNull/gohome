@@ -1,0 +1,60 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: go
+  labels:
+    name: go
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+  selector:
+    name: go
+  type: ClusterIP
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: go
+  labels:
+    name: go
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: go
+  template:
+    metadata:
+      labels:
+        name: go
+    spec:
+      containers:
+        - args:
+            - --bind
+            - :8080
+          image: ghcr.io/ebnull/gohome:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - mountPath: /.cache
+              name: config
+          imagePullPolicy: IfNotPresent
+          name: go
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+        fsGroupChangePolicy: OnRootMismatch
+  volumeClaimTemplates:
+    - metadata:
+        name: config
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
+  serviceName: go
+
