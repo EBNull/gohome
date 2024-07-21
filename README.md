@@ -53,7 +53,7 @@ will redirect to this URL (substituting the the link target for `%s`).
 This is designed for the case of new links being added that have not
 yet been cached.
 
-## Automatic loopback & Binding
+## Automatic loopback configuration
 
 By default (controlled by `--auto`), on a linux or mac machine, `gohome`
 will add a local loopback IP address to the loopback interface. This
@@ -67,7 +67,7 @@ running locally.
 
 ## Binding
 
-To change the bind address use `--bind`. You'lll probably also
+To change the bind address use `--bind`. You'll probably also
 want to disable autoconfiguration when using this flag the bind
 address is also used as the loopback address.
 
