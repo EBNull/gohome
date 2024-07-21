@@ -17,6 +17,10 @@ By default `gohome` configures the URL `http://gohome` to avoid
 interfering with an existing `go` domain. Pass `--hostname go`
 to allow `http://go` to resolve to `gohome` instead.
 
+There is no web interface to add or edit golinks. Instead you can
+add them [manually](#creating-links) or periodically [pull links](#chained-links)
+from another golinks source.
+
 ## Quick Start
 
 ### Local
@@ -76,6 +80,9 @@ full URL to a remote JSON file whose contents are a list of links.
 This file will be updated and merged with already known links every `--interval` (default: `15m`).
 
 Updated links will be written to the cache file specified by `--cache`.
+
+If a web URL exists to add a new link on the upstream server you can
+enable `golinks` to add UI links to it by setting `--add-link-url`.
 
 ## Chained Links
 
