@@ -4,8 +4,8 @@ A `go/links` daemon for your local machine.
 
 Unlike other golink implementations `gohome` is designed to run
 on a single user's mac or linux machine. By default DNS and IP
-settings are configured automatically. Root priviledges are
-required for this functionality.
+settings are configured automatically and deconfigured on exit.
+Root privileges are required for this functionality.
 
 `gohome` can continually download and refresh golinks from a central
 server. This allows integration with an existing link service
@@ -71,6 +71,7 @@ will add a local loopback IP address to the loopback interface. This
 IP address is given as the IP to `--bind`, which by default is set
 to `127.0.0.53:80`. It will also edit `/etc/hosts` to enable resolution
 of the domain name given by `--hostname` (default `gohome`).
+These changes are reverted when `golinks` exits.
 
 In effect, this allows your local machine to immediately resolve 
 `http://gohome` and URLs without conflicting with other services
