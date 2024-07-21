@@ -13,22 +13,42 @@ that may not always be accessible. In this configuration
 `gohome` works as a local cache to ensure no workflow disruptions
 in case of an outage.
 
+By default `gohome` configures the URL `http://gohome` to avoid
+interfering with an existing `go` domain. Pass `--hostname go`
+to allow `http://go` to resolve to `gohome` instead.
+
 ## Quick Start
 
-### Container
-
-Using a [container image](https://github.com/EBNull/gohome/pkgs/container/gohome):
+### Local
 
 ```shell
-docker run ghcr.io/ebnull/gohome:latest
+go install github.com/ebnull/gohome@latest
+```
+```
+gohome
+open http://gohome/
 ```
 
 ### Homebrew
 
-Using homebrew (see [tap](https://github.com/EBNull/homebrew-gohome)):
+Via a homebrew [tap](https://github.com/EBNull/homebrew-gohome):
 
 ```shell
 brew install ebnull/gohome/gohome
+```
+
+```
+gohome --hostname go
+open http://gohome/
+```
+
+### Container
+
+Using a [container image](https://github.com/EBNull/gohome/pkgs/container/gohome)
+for network deployment:
+
+```shell
+docker run ghcr.io/ebnull/gohome:latest
 ```
 
 ## Creating Links
