@@ -1,6 +1,17 @@
 # Gohome
 
-An implementation of `go/links` for your local machine.
+A `go/links` daemon for your local machine.
+
+Unlike other golink implementations `gohome` is designed to run
+on a single user's mac or linux machine. By default DNS and IP
+settings are configured automatically. Root priviledges are
+required for this functionality.
+
+`gohome` can continually download and refresh golinks from a central
+server. This allows integration with an existing link service
+that may not always be accessible. In this configuration
+`gohome` works as a local cache to ensure no workflow disruptions
+in case of an outage.
 
 ## Quick Start
 
