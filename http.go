@@ -145,11 +145,12 @@ func (g *goHttp) linkMissing(name string, chainUrl string) error {
 
 	return htmlTemplate(g.W,
 		http.StatusNotFound,
-		`<h1>Not Found</h1><pre style="display: inline">go/{{.Name}}</pre> does not redirect anywhere. Maybe you'd like to <a href="/links">add it</a>?{{if .ChainTo}} Or try <a href="{{.ChainTo}}">upstream</a>?{{end}}`,
+		`<h1>Not Found</h1><pre style="display: inline">go/{{.Name}}</pre> does not redirect anywhere.{{if .AddLinkUrl}}<p>Maybe you'd like to <a href="{{.AddLinkUrl}}">add it</a>?{{end}}{{if .ChainTo}} Or try <a href="{{.ChainTo}}">upstream</a>?{{end}}`,
 		struct {
-			Name    string
-			ChainTo string
-		}{name, redir},
+			Name       string
+			ChainTo    string
+			AddLinkUrl string
+		}{name, redir, *flagAddLinkUrl},
 	)
 }
 
