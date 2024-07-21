@@ -34,16 +34,16 @@ dockers:
       - ghcr.io/ebnull/gohome:v{{ .Major }}.{{ .Minor }}
 
 brews:
-  - repository:
+  - license: "MIT"
+    homepage: "https://github.com/EBNull/gohome"
+    description: "go/links daemon for your local machine"
+    repository:
       owner: ebnull
       name: homebrew-gohome
     service: |
       run [opt_bin/"gohome"]
       require_root true
       working_dir HOMEBREW_PREFIX
-    url_headers:
-      - "Accept: application/octet-stream"
-      - "Authorization: bearer #{GitHub::API.credentials}"
 
 #release:
 #  draft: true
@@ -65,6 +65,9 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+
+source:
+  enabled: true
 
 changelog:
   sort: asc
