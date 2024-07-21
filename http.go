@@ -15,10 +15,26 @@ import (
 
 var flagAddLinkUrl = flag.String("add-link-url", build.DefaultAddLinkUrl, "The url to add a new golink. If set a link will be displayed when a golink is not found.")
 
+var tplHeader = `<!doctype html>`
+var tplFooter = `
+		<style>
+			:root {
+				background-color: Field;
+				color: FieldText;
+				color-scheme: dark light;
+				margin: 0;
+				padding: 1in;
+			}
+			a {
+			  color: VisitedText !important;
+      }
+		</style>
+`
+
 func htmlTemplate(w http.ResponseWriter, status int, tpl string, data any) error {
 	w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
-	t, err := template.New("foo").Parse(tpl)
+	t, err := template.New("foo").Parse(fmt.Sprintf("%s\n%s\n%s", tplHeader, tpl, tplFooter))
 	if err != nil {
 		return err
 	}
@@ -61,37 +77,51 @@ func (g *goHttp) handleRoot() error {
 		`<h1>gohome</h1>
 		<p>The local go link redirector</p>
 		{{if .AddLinkUrl}}<p><a href="{{.AddLinkUrl}}">Add a new link</a></p>{{end}}
+		<div id="prefs">
 		<table><tr><th>Pref</th><th>Value</th><th>Description</th><th></th></tr>
 		<tr>
 		  <th>no-redirect</th><td>{{.NoRedir}}</td>
 		  <td>If nonzero, render a html page to preview the link destination instead of automatically redirecting.</td>
 		  <td><a href="/_/pref?k=no-redirect&v=1">Enable</a> | <a href="/_/pref?k=no-redirect&v=0">Disable</a></td>
 		</tr>
+		{{if .CanChain}}
 		<tr>
 		  <th>no-chain</th><td>{{.NoChain}}</td>
 		  <td>If nonzero and a golink is not found render a html page instead of automatically redirecting to upstream.</td>
 		  <td><a href="/_/pref?k=no-chain&v=1">Enable</a> | <a href="/_/pref?k=no-chain&v=0">Disable</a></td>
 		</tr>
+		{{end}}
 		</table>
+		</div>
 		</p>
 		<style>
 			tr th {
 			  font-family: monospace;
-   			  white-space: pre;
+        white-space: pre;
 			}
-			tr td:first {
+			th:has(+ td) {
+				text-align: left;
+			}
+			tr td:nth-child(2) {
 			  font-family: monospace;
-   			  white-space: pre;
+        white-space: pre;
+				text-align: center;
 			}
-			a {
-			  color: LinkText !important
-		        }
+			td,th {
+				padding: 5px;
+			}
+			#prefs {
+				position: absolute;
+				bottom: 1in;
+				left: 1in
+			}
 		</style>
 		`, struct {
 			NoRedir    string
 			NoChain    string
 			AddLinkUrl string
-		}{g.getPref("no-redirect", "0"), g.getPref("no-chain", "0"), *flagAddLinkUrl},
+			CanChain   bool
+		}{g.getPref("no-redirect", "0"), g.getPref("no-chain", "0"), *flagAddLinkUrl, true || *flagChain != ""},
 	)
 }
 
