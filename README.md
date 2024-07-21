@@ -56,7 +56,7 @@ docker run ghcr.io/ebnull/gohome:latest
 Creating new links is not supported in the web interface.
 
 To add links manually edit the `--cache` path, by default
-`"~/.cache/golink_cache.json`.
+`~/.cache/golink_cache.json`.
 
 ```json
 [
