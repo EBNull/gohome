@@ -46,6 +46,17 @@ gohome --hostname go
 open http://gohome/
 ```
 
+Homebrew can also install `gohome` as a service running as root.
+In that case, the default paths are `/opt/homebrew/etc/gohome.flags`
+and `/opt/homebrew/var/cache/golink_cache.json`. You can find
+log output at `/opt/homebrew/var/gohome-stderr.txt`.
+
+To write a default configuration to that path, run
+
+```
+gohome --config /opt/homebrew/etc/gohome.flags --write-config
+```
+
 ### Container
 
 Using a [container image](https://github.com/EBNull/gohome/pkgs/container/gohome)
