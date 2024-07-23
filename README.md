@@ -100,7 +100,7 @@ to `127.0.0.53:80`. It will also edit `/etc/hosts` to enable resolution
 of the domain name given by `--hostname` (default `gohome`).
 These changes are reverted when `golinks` exits.
 
-In effect, this allows your local machine to immediately resolve 
+In effect, this allows your local machine to immediately resolve
 `http://gohome` and URLs without conflicting with other services
 running locally.
 
@@ -153,6 +153,60 @@ On mac, if you use the default configuration, you'll get a firewall
 prompt asking you to allow `gohome` to accept connections even though
 the `127.0.0.53` local bind is not accesbile from outside the machine.
 Even if you click deny here golinks will still be accessible locally.
+
+## Run-time configuration
+
+`gohome` accepts flags from the command line, environment variables,
+and a configuration file (in that order). `--config` sets the path
+to the configuration file. The format of this file is defined by
+[`ff.PlainParser`](https://pkg.go.dev/github.com/peterbourgon/ff/v3#PlainParser)
+and by default is located at `~/.config/gohome.flags`.
+
+A default configuration file can be written with `--write-config`.
+
+### Example configuration file
+
+```
+# Configuration file for gohome
+#
+# https://github.com/EBNull/gohome
+#
+# Syntax:
+#   key value
+#
+# For syntax details, see https://pkg.go.dev/github.com/peterbourgon/ff/v3#PlainParser
+#
+
+# The url to add a new golink. If set a link will be displayed when a golink is not found.
+#add-link-url
+
+# Automatically alias the bind IP address to the loopback interface
+auto true
+
+# The IP and port to bind to
+bind 127.0.0.53:80
+
+# The filename to load cached golinks from
+cache ~/.cache/golink_cache.json
+
+# The remote URL to chain redirect to (if link not found in local cache)
+#chain
+
+# Specifies the location of the hostfile to edit for --auto mode
+hostfile /etc/hosts
+
+# The hostname to add to /etc/hosts for --auto mode (resolvable to the bind address)
+hostname gohome
+
+# The periodic interval for downloading new golinks
+interval 15m0s
+
+# Specifies the loopback adapter interface for --auto mode
+loopback-interface lo
+
+# The remote URL to update golinks from
+#remote
+```
 
 ## Build-time configuration
 
