@@ -50,7 +50,7 @@ brews:
       keep_alive true
       working_dir HOMEBREW_PREFIX
       log_path HOMEBREW_PREFIX/"var/gohome-stdout.txt"
-      log_error_path HOMEBREW_PREFIX/"var/gohome-stderr.txt"
+      error_log_path HOMEBREW_PREFIX/"var/gohome-stderr.txt"
     caveats: |
       To write a default configuration file for the service, run:
       gohome --config /opt/homebrew/etc/gohome.flags --write-config
