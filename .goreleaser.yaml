@@ -6,6 +6,7 @@ version: 2
 before:
   hooks:
     - go mod tidy
+    - go fmt ./...
 
 builds:
   - env:
@@ -19,6 +20,7 @@ builds:
       - -X github.com/ebnull/gohome/build.DefaultBind=127.0.0.53:80
       - -X github.com/ebnull/gohome/build.DefaultCache=~/.cache/golink_cache.json
       - -X github.com/ebnull/gohome/build.DefaultChain=
+      - -X github.com/ebnull/gohome/build.DefaultConfig=~/.config/gohome.flags
       - -X github.com/ebnull/gohome/build.DefaultHostsfile=/etc/hosts
       - -X github.com/ebnull/gohome/build.DefaultHostname=gohome
       - -X github.com/ebnull/gohome/build.DefaultInterval=15m

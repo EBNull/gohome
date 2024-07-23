@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
-	"strings"
 	"sync"
 
 	"github.com/google/renameio/v2"
@@ -79,23 +77,7 @@ func (db *LinkDB) Update(links []Link) LinkStat {
 	return stat
 }
 
-func cachePath(pth string) (string, error) {
-	pth = os.ExpandEnv(pth)
-	if strings.HasPrefix(pth, "~/") || pth == "~" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		pth = path.Join(home, pth[1:])
-	}
-	return pth, nil
-}
-
 func (db *LinkDB) LoadJson(path string) error {
-	path, err := cachePath(path)
-	if err != nil {
-		return err
-	}
 	f, err := os.Open(path)
 	if os.IsNotExist(err) {
 		log.Printf("Loaded 0 golinks from %s: %s\n", path, err.Error())
@@ -115,10 +97,6 @@ func (db *LinkDB) LoadJson(path string) error {
 }
 
 func (db *LinkDB) WriteCache(path string) error {
-	path, err := cachePath(path)
-	if err != nil {
-		return err
-	}
 	lns := make([]Link, 0, len(db.links))
 	for _, l := range db.links {
 		lns = append(lns, l)

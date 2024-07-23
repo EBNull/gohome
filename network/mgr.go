@@ -8,8 +8,8 @@ import (
 	"github.com/ebnull/gohome/network/loopback"
 )
 
-var flagLoopbackInterface = flag.String("loopback-interface", "lo0", "Specifies the loopback adapter interface")
-var flagHostfile = flag.String("hostfile", "/etc/hosts", "Specifies the location of the hostfile to edit")
+var flagLoopbackInterface = flag.String("loopback-interface", "lo0", "Specifies the loopback adapter interface for --auto mode")
+var flagHostfile = flag.String("hostfile", "/etc/hosts", "Specifies the location of the hostfile to edit for --auto mode")
 
 type HostAliasManager struct {
 	lb loopback.Loopback

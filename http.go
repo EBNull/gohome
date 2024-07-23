@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"html/template"
@@ -49,6 +50,42 @@ var tplFooter = `
 		</style>
 			<div id="ver"><a href="https://github.com/EBNull/gohome">gohome</a>` + version + `<br><span>built ` + date + `</span></div>
 `
+
+func serveHttp(ctx context.Context, db *LinkDB, hostnames []string) error {
+	http.HandleFunc("/", httpErrorWrap(
+		func(w *bufWriter, r *http.Request, err error) {
+			serr := "nil"
+			if err != nil {
+				serr = fmt.Sprintf("%#v", err.Error())
+			}
+			log.Printf("Handled request from %s: %s %s (HTTP %d, %d bytes, error=%s)\n", r.RemoteAddr, r.Method, r.URL.Path, w.Code, w.Body.Len(), serr)
+		},
+		func(w http.ResponseWriter, r *http.Request) error {
+			g := goHttp{w, r}
+			p := strings.TrimPrefix(r.URL.Path, "/")
+
+			switch {
+			case p == "":
+				return g.handleRoot()
+			case p == "_/pref":
+				return g.handlePref()
+			case p == "favicon.ico":
+				fallthrough
+			case strings.HasPrefix(p, ".well-known"):
+				fallthrough
+			case strings.HasPrefix(p, "."):
+				fallthrough
+			case strings.HasPrefix(p, "_"):
+				w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", 2*time.Hour/time.Second))
+				http.NotFound(w, r)
+				return nil
+			default:
+				return g.handleLink(p, db.Lookup(p), *flagChain)
+			}
+		}))
+
+	return listen(ctx, *flagBind, hostnames)
+}
 
 func htmlTemplate(w http.ResponseWriter, status int, tpl string, data any) error {
 	w.Header().Add("Content-Type", "text/html; charset=utf-8")

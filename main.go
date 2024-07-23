@@ -2,80 +2,40 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 	"slices"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/ebnull/gohome/build"
 	"github.com/ebnull/gohome/network"
 )
 
-var (
-	version = ""
-	commit  = ""
-	date    = ""
-)
-
-var (
-	flagVersion = flag.Bool("version", false, "Show version and exit")
-	flagCache   = flag.String("cache", build.DefaultCache, "The filename to load cached golinks from")
-
-	flagChain          = flag.String("chain", build.DefaultChain, "The remote URL to chain redirect to (if link not found in local cache)")
-	flagRemote         = flag.String("remote", build.DefaultRemote, "The remote URL to update golinks from")
-	flagUpdateInterval = flag.Duration("interval", func() time.Duration {
-		d, err := time.ParseDuration(build.DefaultInterval)
-		if err != nil {
-			panic(err)
-		}
-		return d
-	}(), "The periodic interval for downloading new golinks")
-
-	flagBind = flag.String("bind", build.DefaultBind, "The IP and port to bind to")
-
-	flagAuto = flag.Bool("auto", func() bool {
-		b, err := strconv.ParseBool(build.DefaultAuto)
-		if err != nil {
-			panic(err)
-		}
-		return b
-	}(), "Automatically alias the bind IP address to the loopback interface")
-	flagHostname = flag.String("hostname", build.DefaultHostname, "The hostname to add to /etc/hosts (resolvable to the bind address)")
-)
-
-func init() {
-	if runtime.GOOS == "linux" {
-		li := flag.Lookup("loopback-interface")
-		li.DefValue = "lo"
-		li.Value.Set("lo")
-	}
-}
-
 func main() {
-	err := mainImpl()
+	err := mainImpl(os.Args)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 }
 
-func onSigintOrDone(doneChan <-chan struct{}, f ...func() error) func() {
+func onCleanupSignalOrDone(doneChan <-chan struct{}, f ...func() error) func() {
 	return func() {
 		sigchan := make(chan os.Signal)
 		signal.Notify(sigchan, os.Interrupt)
-		sendInt := false
+		signal.Notify(sigchan, syscall.SIGTERM)
+		var s os.Signal
 		select {
-		case <-sigchan:
-			log.Printf("SIGINT")
-			sendInt = true
+		case s = <-sigchan:
+			ss, ok := s.(syscall.Signal)
+			if !ok {
+				log.Printf("Caught signal: %s", s.String())
+			} else {
+				log.Printf("Caught signal %d:  %s", int(ss), ss.String())
+			}
 		case <-doneChan:
 		}
 		signal.Stop(sigchan)
@@ -85,110 +45,99 @@ func onSigintOrDone(doneChan <-chan struct{}, f ...func() error) func() {
 				log.Print(err)
 			}
 		}
-		if sendInt {
-			syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		if s != nil {
+			ss, ok := s.(syscall.Signal)
+			log.Printf("Reraising signal %s\n", s)
+			if !ok {
+				os.Exit(1)
+			}
+			syscall.Kill(syscall.Getpid(), ss)
 		}
 	}
 }
 
-func mainImpl() error {
-	flag.Parse()
+func runBackgroundUpdate(ctx context.Context, db *LinkDB) {
+	if db.Len() == 0 {
+		err := updateLinksFromRemote(db, *flagRemote, *flagCache)
+		if err != nil {
+			log.Printf("Error fetching inital golinks: %s\n", err)
+		}
+	}
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-time.After(*flagUpdateInterval):
+				err := updateLinksFromRemote(db, *flagRemote, *flagCache)
+				if err != nil {
+					log.Printf("Error fetching golinks: %s\n", err)
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}(ctx)
+}
+
+func setupAutoconfig(ctx context.Context) ([]string, error) {
+	if !slices.Contains([]string{"darwin", "linux"}, runtime.GOOS) {
+		log.Printf("GOOS is %s; skipping loopback alias and editing of /etc/hosts", runtime.GOOS)
+		return nil, nil
+	}
+
+	host, _, err := net.SplitHostPort(*flagBind)
+	if err != nil {
+		return nil, err
+	}
+	am, err := network.NewAliasManager(*flagHostname, host)
+	if err != nil {
+		return nil, fmt.Errorf("%w\n\nHint: are you root? Try again with sudo.", err)
+	}
+	err, stop := am.Start()
+	if err != nil {
+		stop()
+		return nil, err
+	}
+	go onCleanupSignalOrDone(ctx.Done(), func() error {
+		stop()
+		return nil
+	})()
+	if ok, _ := am.Exists(); ok {
+		return []string{am.Host()}, nil
+	}
+	return nil, fmt.Errorf("Could not set up name resolution for %s to %s", *flagHostname, host)
+}
+
+func mainImpl(argv []string) error {
+	err := handleFlags(argv)
+	if err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	if *flagVersion {
-		fmt.Printf("%s\n%s\n%s\n%s", "gohome", version, commit, date)
-		return nil
-	}
 
 	db := &LinkDB{}
 	if err := db.LoadJson(*flagCache); err != nil {
 		return err
 	}
+
 	if *flagRemote == "" {
-		log.Printf("There is no remote configured; no golinks will be downloaded.")
+		log.Printf("There is no remote configured; no golinks will be downloaded")
 	} else {
-		if db.Len() == 0 {
-			err := updateLinksFromRemote(db, *flagRemote, *flagCache)
-			if err != nil {
-				return err
-			}
-		}
-		go func(ctx context.Context) {
-			for {
-				select {
-				case <-time.After(*flagUpdateInterval):
-					updateLinksFromRemote(db, *flagRemote, *flagCache)
-				case <-ctx.Done():
-					return
-				}
-			}
-		}(ctx)
+		runBackgroundUpdate(ctx, db)
 	}
 
 	if *flagChain == "" {
-		log.Printf("There is no chain configured, no redirection will occur on missing link")
+		log.Printf("There is no chain configured; no redirection will occur on missing links")
 	}
 
 	hostResolve := []string{}
 	if *flagAuto {
-		if !slices.Contains([]string{"darwin", "linux"}, runtime.GOOS) {
-			log.Printf("GOOS is %s; skipping loopback alias and editing of /etc/hosts", runtime.GOOS)
-		} else {
-			host, _, err := net.SplitHostPort(*flagBind)
-			if err != nil {
-				return err
-			}
-			am, err := network.NewAliasManager(*flagHostname, host)
-			if err != nil {
-				return fmt.Errorf("%w\n\nHint: are you root? Try again with sudo.", err)
-			}
-			err, stop := am.Start()
-			if err != nil {
-				stop()
-				return err
-			}
-			go onSigintOrDone(ctx.Done(), func() error {
-				stop()
-				return nil
-			})()
-			if ok, _ := am.Exists(); ok {
-				hostResolve = append(hostResolve, am.Host())
-			}
+		hostResolve, err = setupAutoconfig(ctx)
+		if err != nil {
+			return err
 		}
 	}
 
-	http.HandleFunc("/", httpErrorWrap(
-		func(w *bufWriter, r *http.Request, err error) {
-			serr := "nil"
-			if err != nil {
-				serr = fmt.Sprintf("%#v", err.Error())
-			}
-			log.Printf("Handled request from %s: %s %s (HTTP %d, %d bytes, error=%s)\n", r.RemoteAddr, r.Method, r.URL.Path, w.Code, w.Body.Len(), serr)
-		},
-		func(w http.ResponseWriter, r *http.Request) error {
-			g := goHttp{w, r}
-			p := strings.TrimPrefix(r.URL.Path, "/")
-
-			switch {
-			case p == "":
-				return g.handleRoot()
-			case p == "_/pref":
-				return g.handlePref()
-			case p == "favicon.ico":
-				fallthrough
-			case strings.HasPrefix(p, ".well-known"):
-				fallthrough
-			case strings.HasPrefix(p, "."):
-				fallthrough
-			case strings.HasPrefix(p, "_"):
-				w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", 2*time.Hour/time.Second))
-				http.NotFound(w, r)
-				return nil
-			default:
-				return g.handleLink(p, db.Lookup(p), *flagChain)
-			}
-		}))
-
-	return listen(ctx, *flagBind, hostResolve)
+	return serveHttp(ctx, db, hostResolve)
 }

@@ -4,6 +4,7 @@ var (
 	DefaultAuto              string = "true"
 	DefaultBind              string = "127.0.0.53:80"
 	DefaultCache             string = "~/.cache/golink_cache.json"
+	DefaultConfig            string = "~/.config/gohome.flags"
 	DefaultChain             string = ""
 	DefaultHostfile          string = "/etc/hosts"
 	DefaultHostname          string = "gohome"
