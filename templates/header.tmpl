@@ -1,0 +1,51 @@
+<!doctype html>
+<title>gohome{{.TitleSuffix}}</title>
+<style>
+    :root {
+        background-color: Field;
+        color: FieldText;
+        color-scheme: dark light;
+        margin: 0;
+        padding: 1in;
+    }
+    a {
+        color: VisitedText !important;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    tr th {
+        font-family: monospace;
+        white-space: pre;
+    }
+    th:has(+ td) {
+        text-align: left;
+    }
+    tr td:nth-child(2) {
+        font-family: monospace;
+        white-space: pre;
+        text-align: center;
+    }
+    td,th {
+        padding: 5px;
+    }
+    #prefs {
+        position: absolute;
+        bottom: 1in;
+        left: 1in
+    }
+    #ver {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        text-align: right;
+    }
+    #ver a {
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+    #ver span {
+        font-size: small;
+    }
+</style>
