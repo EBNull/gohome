@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"html/template"
 	"log"
 	"net"
 	"os"
@@ -15,10 +17,21 @@ import (
 	"github.com/ebnull/gohome/network"
 )
 
+var (
+	//go:embed templates
+	content embed.FS
+	tmpl    *template.Template
+)
+
 func main() {
-	err := mainImpl(os.Args)
+	var err error
+	tmpl, err = template.ParseFS(content, "templates/*.tmpl")
 	if err != nil {
-		log.Fatalf("%s", err)
+		log.Fatal(err)
+	}
+
+	if err = mainImpl(os.Args); err != nil {
+		log.Fatal(err)
 	}
 }
 

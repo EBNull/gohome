@@ -1,0 +1,20 @@
+<h1>gohome</h1>
+<p>The local go link redirector</p>
+{{if .AddLinkUrl}}<p><a href="{{.AddLinkUrl}}">Add a new link</a></p>{{end}}
+<div id="prefs">
+<table><tr><th>Pref</th><th>Value</th><th></th><th>Description</th></tr>
+<tr>
+  <th>no-redirect</th><td>{{.NoRedir}}</td>
+  <td>{{if eq .NoRedir "0"}}<a href="/_/pref?k=no-redirect&v=1">Enable</a>{{else}}<a href="/_/pref?k=no-redirect&v=0">Disable</a>{{end}}</td>
+  <td>If nonzero, render a html page to preview the link destination instead of automatically redirecting.</td>
+</tr>
+{{if .CanChain}}
+<tr>
+  <th>no-chain</th><td>{{.NoChain}}</td>
+  <td>{{if eq .NoChain "0"}}<a href="/_/pref?k=no-chain&v=1">Enable</a>{{else}}<a href="/_/pref?k=no-chain&v=0">Disable</a>{{end}}</td>
+  <td>If nonzero and a golink is not found render a html page instead of automatically redirecting to upstream.</td>
+</tr>
+{{end}}
+</table>
+</div>
+</p>
