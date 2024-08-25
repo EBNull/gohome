@@ -50,6 +50,8 @@ var (
 		return b
 	}(), "Automatically alias the bind IP address to the loopback interface")
 	flagHostname = flag.String("hostname", build.DefaultHostname, "The hostname to add to /etc/hosts for --auto mode (resolvable to the bind address)")
+
+	flagAddLinkUrl = flag.String("add-link-url", build.DefaultAddLinkUrl, "The url to add a new golink. If set a link will be displayed when a golink is not found.")
 )
 
 func init() {
