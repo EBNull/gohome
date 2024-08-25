@@ -2,18 +2,13 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
-
-	"github.com/ebnull/gohome/build"
 )
-
-var flagAddLinkUrl = flag.String("add-link-url", build.DefaultAddLinkUrl, "The url to add a new golink. If set a link will be displayed when a golink is not found.")
 
 func serveHttp(ctx context.Context, db *LinkDB, hostnames []string) error {
 	http.HandleFunc("/", httpErrorWrap(
