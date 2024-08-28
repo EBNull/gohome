@@ -104,7 +104,11 @@ func (g *goHttp) handleRoot() error {
 }
 
 func (g *goHttp) handleView(db *LinkDB) error {
-	return executeTmpl(g.W, http.StatusOK, " - View", "view.tmpl", db.links)
+	data := struct {
+		Links  map[string]Link
+		Prefix string
+	}{db.links, *flagHostname}
+	return executeTmpl(g.W, http.StatusOK, " - View", "view.tmpl", data)
 }
 
 func (g *goHttp) handleLink(name string, l *Link, chainUrl string) error {
