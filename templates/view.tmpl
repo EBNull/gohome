@@ -14,10 +14,10 @@
 <th>Shortlink</th>
 <th>Destination</th>
 </tr>
-{{range .}}
+{{range .Links}}
 <tr>
 <td>{{.Owner}}</td>
-<td><a href="/{{.Display}}">go/{{.Display}}</a></td>
+<td><a href="/{{.Display}}">{{$.Prefix}}/{{.Display}}</a></td>
 <td><a href="{{.Destination}}">{{.Destination}}</a></td>
 </tr>
 {{end}}
