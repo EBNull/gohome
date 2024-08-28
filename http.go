@@ -28,6 +28,8 @@ func serveHttp(ctx context.Context, db *LinkDB, hostnames []string) error {
 				return g.handleRoot()
 			case p == "_/pref":
 				return g.handlePref()
+			case p == "_/view":
+				return g.handleView(db)
 			case p == "favicon.ico":
 				fallthrough
 			case strings.HasPrefix(p, ".well-known"):
@@ -99,6 +101,10 @@ func (g *goHttp) handleRoot() error {
 		CanChain   bool
 	}{g.getPref("no-redirect", "0"), g.getPref("no-chain", "0"), *flagAddLinkUrl, true || *flagChain != ""}
 	return executeTmpl(g.W, http.StatusOK, "", "index.tmpl", data)
+}
+
+func (g *goHttp) handleView(db *LinkDB) error {
+	return executeTmpl(g.W, http.StatusOK, " - View", "view.tmpl", db.links)
 }
 
 func (g *goHttp) handleLink(name string, l *Link, chainUrl string) error {

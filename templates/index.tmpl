@@ -1,6 +1,17 @@
+<style>
+    tr td:nth-child(2) {
+        font-family: monospace;
+        white-space: pre;
+        text-align: center;
+    }
+    th:has(+ td) {
+        text-align: left;
+    }
+</style>
 <h1>gohome</h1>
 <p>The local go link redirector</p>
 {{if .AddLinkUrl}}<p><a href="{{.AddLinkUrl}}">Add a new link</a></p>{{end}}
+<p><a href="_/view">View all links</a></p>
 <div id="prefs">
 <table><tr><th>Pref</th><th>Value</th><th></th><th>Description</th></tr>
 <tr>

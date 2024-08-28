@@ -1,0 +1,26 @@
+<style>
+    tr td {
+        font-family: monospace;
+        white-space: pre;
+    }
+    th {
+        text-align: left;
+    }
+</style>
+<h1>All Links</h1>
+<table>
+<tr>
+<th>Owner</th>
+<th>Shortlink</th>
+<th>Destination</th>
+</tr>
+{{range .}}
+<tr>
+<td>{{.Owner}}</td>
+<td><a href="/{{.Display}}">go/{{.Display}}</a></td>
+<td><a href="{{.Destination}}">{{.Destination}}</a></td>
+</tr>
+{{end}}
+</table>
+<br><br><br>
+<p><a href="/">Home</a>
