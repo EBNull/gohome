@@ -41,7 +41,7 @@ func serveHttp(ctx context.Context, db *LinkDB, hostnames []string) error {
 				http.NotFound(w, r)
 				return nil
 			default:
-				return g.handleLink(p, db.Lookup(p), *flagChain)
+				return g.handleLink(p, db.Lookup(p), db.FuzzyLookup(p), *flagChain)
 			}
 		}))
 
@@ -111,9 +111,9 @@ func (g *goHttp) handleView(db *LinkDB) error {
 	return executeTmpl(g.W, http.StatusOK, " - View", "view.tmpl", data)
 }
 
-func (g *goHttp) handleLink(name string, l *Link, chainUrl string) error {
+func (g *goHttp) handleLink(name string, l *Link, fuzzyl []*Link, chainUrl string) error {
 	if l == nil {
-		return g.linkMissing(name, chainUrl)
+		return g.linkMissing(name, fuzzyl, chainUrl)
 	}
 	return g.linkFound(l)
 }
@@ -134,7 +134,9 @@ func (g *goHttp) linkFound(link *Link) error {
 	return executeTmpl(g.W, http.StatusOK, fmt.Sprintf(" - %s/%s", g.R.Host, link.Display), "linkinfo.tmpl", data)
 }
 
-func (g *goHttp) linkMissing(name string, chainUrl string) error {
+func (g *goHttp) linkMissing(name string, fuzzyl []*Link, chainUrl string) error {
+	// TODO: Consider how to expose fuzzy matching when we have an upstream.
+	//       Right now we unconditionally forward and probably get an error there.
 	redir := chainUrl
 	if strings.Contains(chainUrl, "%") {
 		redir = fmt.Sprintf(chainUrl, name)
@@ -149,13 +151,13 @@ func (g *goHttp) linkMissing(name string, chainUrl string) error {
 	} else {
 		log.Printf("Missing link go/%s; chaining not configured", name)
 	}
-
 	return executeTmpl(g.W, http.StatusNotFound, fmt.Sprintf(" - 404 %s/%s not found", g.R.Host, name), "not_found.tmpl", struct {
 		Name       string
 		ChainTo    string
 		AddLinkUrl string
 		Prefix     string
-	}{name, redir, *flagAddLinkUrl, g.R.Host})
+		FuzzyLinks []*Link
+	}{name, redir, *flagAddLinkUrl, g.R.Host, fuzzyl})
 }
 
 func (g *goHttp) handlePref() error {

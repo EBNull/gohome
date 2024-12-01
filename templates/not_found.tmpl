@@ -1,5 +1,31 @@
-<h1>gohome - 404</h1>
-<h1>Not Found</h1><pre style="display: inline">{{.Prefix}}/{{.Name}}</pre> does not redirect anywhere.
+<h1>gohome - 404 Not Found</h1>
+<style>
+    tr td {
+        font-family: monospace;
+        white-space: pre;
+    }
+    th {
+        text-align: left;
+    }
+</style>
+<pre style="display: inline">{{.Prefix}}/{{.Name}}</pre> does not redirect anywhere.
 {{if .AddLinkUrl}}<p>Maybe you'd like to <a href="{{.AddLinkUrl}}">add it</a>?{{end}}
 {{if .ChainTo}}<p>Or try <a href="{{.ChainTo}}">upstream</a>?{{end}}
+{{if .FuzzyLinks}}
+<h2>Did you mean...?</h2>
+<table>
+<tr>
+<th>Owner</th>
+<th>Shortlink</th>
+<th>Destination</th>
+</tr>
+{{range $l := .FuzzyLinks}}
+<tr>
+<td>{{.Owner}}</td>
+<td><a href="/{{.Display}}">{{$.Prefix}}/{{.Display}}</a></td>
+<td><a href="{{.Destination}}">{{.Destination}}</a></td>
+</tr>
+{{end}}
+</table>
+{{end}}
 <p><a href="/">Home</a>

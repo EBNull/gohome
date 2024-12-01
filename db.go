@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net/http"
 	"os"
+	"slices"
+	"sort"
 	"sync"
 
 	"github.com/google/renameio/v2"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 
 func readLinks(rdr io.Reader) ([]Link, error) {
@@ -120,4 +124,31 @@ func (db *LinkDB) Lookup(name string) *Link {
 		return nil
 	}
 	return &l
+}
+
+func (db *LinkDB) FuzzyLookup(name string) []*Link {
+	l := db.Lookup(name)
+	if l != nil {
+		return []*Link{l}
+	}
+	needle := canonicalizeLink(name)
+	haystack := slices.Collect(maps.Keys(db.links))
+	slices.Sort(haystack)
+
+	matches := fuzzy.RankFindNormalized(needle, haystack)
+	sort.Sort(matches)
+
+	ret := []*Link{}
+	for _, m := range matches {
+		log.Printf("Found fuzzy match %+v", m)
+		if m.Distance > 20 {
+			// Too dissimilar, and all following ones will be too
+			break
+		}
+		ret = append(ret, db.Lookup(m.Target))
+		if len(ret) > 8 {
+			break
+		}
+	}
+	return ret
 }
