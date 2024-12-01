@@ -124,7 +124,14 @@ func (g *goHttp) linkFound(link *Link) error {
 		http.Redirect(g.W, g.R, link.Destination, http.StatusTemporaryRedirect)
 		return nil
 	}
-	return executeTmpl(g.W, http.StatusOK, fmt.Sprintf(" - go/%s", link), "linkinfo.tmpl", nil)
+	data := struct {
+		*Link
+		Prefix string
+	}{
+		link,
+		g.R.Host,
+	}
+	return executeTmpl(g.W, http.StatusOK, fmt.Sprintf(" - %s/%s", g.R.Host, link.Display), "linkinfo.tmpl", data)
 }
 
 func (g *goHttp) linkMissing(name string, chainUrl string) error {
