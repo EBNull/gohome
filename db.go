@@ -69,6 +69,7 @@ func (db *LinkDB) Update(links []Link) LinkStat {
 	db.maybeInit()
 	stat := LinkStat{[]Link{}}
 	for _, link := range links {
+		maybeFixLinkSource(&link)
 		if _, ok := db.links[link.Source]; !ok {
 			stat.Added = append(stat.Added, link)
 		}
