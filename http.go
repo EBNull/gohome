@@ -99,7 +99,7 @@ func (g *goHttp) handleRoot() error {
 		NoChain    string
 		AddLinkUrl string
 		CanChain   bool
-	}{g.getPref("no-redirect", "0"), g.getPref("no-chain", "0"), *flagAddLinkUrl, true || *flagChain != ""}
+	}{g.getPref("no-redirect", "0"), g.getPref("no-chain", "0"), *flagAddLinkUrl, *flagChain != ""}
 	return executeTmpl(g.W, http.StatusOK, "", "index.tmpl", data)
 }
 
