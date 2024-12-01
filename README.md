@@ -73,6 +73,12 @@ Creating new links is not supported in the web interface.
 To add links manually edit the `--cache` path, by default
 `~/.cache/golink_cache.json`.
 
+Note that as of `v0.0.12` the only required fields are `display` and `destination`.
+`source` is the [*canonicalized* link](https://github.com/search?q=repo%3AEBNull%2Fgohome+path%3Alink.go+canonicalize&type=code)
+while `display` is the *visible* link.
+
+There is no ownership management; the field `owner` may be set arbitrarily.
+
 ```json
 [
   {
