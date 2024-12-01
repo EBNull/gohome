@@ -107,7 +107,7 @@ func (g *goHttp) handleView(db *LinkDB) error {
 	data := struct {
 		Links  map[string]Link
 		Prefix string
-	}{db.links, *flagHostname}
+	}{db.links, g.R.Host}
 	return executeTmpl(g.W, http.StatusOK, " - View", "view.tmpl", data)
 }
 
