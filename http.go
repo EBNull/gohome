@@ -150,11 +150,12 @@ func (g *goHttp) linkMissing(name string, chainUrl string) error {
 		log.Printf("Missing link go/%s; chaining not configured", name)
 	}
 
-	return executeTmpl(g.W, http.StatusNotFound, " - 404", "not_found.tmpl", struct {
+	return executeTmpl(g.W, http.StatusNotFound, fmt.Sprintf(" - 404 %s/%s not found", g.R.Host, name), "not_found.tmpl", struct {
 		Name       string
 		ChainTo    string
 		AddLinkUrl string
-	}{name, redir, *flagAddLinkUrl})
+		Prefix     string
+	}{name, redir, *flagAddLinkUrl, g.R.Host})
 }
 
 func (g *goHttp) handlePref() error {
